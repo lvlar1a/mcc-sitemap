@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCC — Information Architecture v2.0</title>
+<style>
+  :root {
+    --bg: #F7F7F5;
+    --paper: #FFFFFF;
+    --ink: #0F0F0E;
+    --ink2: #3D3D3B;
+    --ink3: #737370;
+    --ink4: #A8A8A5;
+    --rule: #E4E4E0;
+    --s-bg: #EEF2FF; --s-text: #3730A3; --s-border: #C7D2FE;
+    --cl-bg: #ECFDF5; --cl-text: #065F46; --cl-border: #A7F3D0;
+    --ct-bg: #FEF3C7; --ct-text: #92400E; --ct-border: #FDE68A;
+    --u-bg: #F3F4F6;  --u-text: #374151;  --u-border: #D1D5DB;
+    --note-bg: #FFFBEB; --note-border: #FDE68A; --note-text: #92400E;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    background: var(--bg); color: var(--ink);
+    font-size: 14px; line-height: 1.5;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 200;
+    background: var(--ink); color: #fff; height: 52px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px; box-shadow: 0 2px 12px rgba(0,0,0,.25);
+    gap: 12px; flex-wrap: wrap;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 14px; }
+  .topbar-brand { font-weight: 800; font-size: 15px; letter-spacing: -.3px; }
+  .topbar-div { width: 1px; height: 18px; background: rgba(255,255,255,.15); }
+  .topbar-sub { font-size: 12px; color: rgba(255,255,255,.4); font-weight: 500; }
+  .topbar-stats { display: flex; gap: 6px; }
+  .stat { text-align: center; padding: 4px 11px; background: rgba(255,255,255,.07); border-radius: 6px; }
+  .stat-n { font-size: 13px; font-weight: 800; }
+  .stat-l { font-size: 9px; color: rgba(255,255,255,.35); text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; }
+
+  /* ── WRAP ── */
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 28px 22px 60px; }
+
+  /* ── LEGEND ── */
+  .legend {
+    background: var(--paper); border: 1px solid var(--rule);
+    border-radius: 10px; padding: 13px 18px;
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: 14px; margin-bottom: 20px;
+  }
+  .legend-title { font-size: 10px; font-weight: 800; color: var(--ink3); text-transform: uppercase; letter-spacing: 1.2px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink2); }
+  .legend-hint { margin-left: auto; font-size: 11px; color: var(--ink4); display: flex; gap: 8px; }
+
+  /* ── CALLOUT ── */
+  .callout {
+    background: var(--note-bg); border: 1px solid var(--note-border);
+    border-radius: 10px; padding: 13px 16px; margin-bottom: 20px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .callout-title { font-weight: 700; font-size: 13px; color: var(--note-text); margin-bottom: 5px; }
+  .callout-body { font-size: 12px; color: #A16207; line-height: 1.65; }
+  .callout-body code { background: var(--ct-bg); padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 11px; }
+
+  /* ── BADGES ── */
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; letter-spacing: .3px; white-space: nowrap; font-family: monospace; border: 1px solid transparent; }
+  .badge-static   { background: var(--s-bg);  color: var(--s-text);  border-color: var(--s-border); }
+  .badge-cms_list { background: var(--cl-bg); color: var(--cl-text); border-color: var(--cl-border); }
+  .badge-cms_tpl  { background: var(--ct-bg); color: var(--ct-text); border-color: var(--ct-border); }
+  .badge-utility  { background: var(--u-bg);  color: var(--u-text);  border-color: var(--u-border); }
+
+  /* ── URL CHIP ── */
+  .url { font-family: monospace; font-size: 11px; color: var(--ink3); background: var(--bg); padding: 2px 7px; border-radius: 4px; border: 1px solid var(--rule); }
+
+  /* ── SEARCH ── */
+  .search-bar { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 10px 16px; display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .search-bar input { border: none; outline: none; background: none; font-size: 13px; color: var(--ink); flex: 1; font-family: inherit; }
+  .search-bar input::placeholder { color: var(--ink4); }
+  .search-clear { background: none; border: none; cursor: pointer; color: var(--ink4); font-size: 12px; padding: 2px 6px; border-radius: 4px; }
+  .search-clear:hover { background: var(--bg); color: var(--ink); }
+  .hl { background: #FEF08A; border-radius: 2px; padding: 0 1px; }
+
+  /* ── TREE ── */
+  .tree { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+  .node-head { display: flex; align-items: flex-start; gap: 10px; border-radius: 9px; cursor: pointer; transition: background .1s; user-select: none; }
+  .node-head:hover { filter: brightness(.97); }
+  .node-head.d0 { background: var(--ink); color: #fff; padding: 15px 18px; box-shadow: 0 2px 8px rgba(0,0,0,.13); }
+  .node-head.d1 { background: var(--paper); border: 1px solid var(--rule); padding: 11px 14px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+  .node-head.d2, .node-head.d3 { background: var(--bg); border: 1px solid var(--rule); padding: 9px 13px; }
+  .toggle { font-size: 11px; width: 14px; flex-shrink: 0; margin-top: 3px; color: var(--ink4); }
+  .d0 .toggle { color: rgba(255,255,255,.4); }
+  .no-toggle { width: 14px; flex-shrink: 0; }
+  .node-body { flex: 1; min-width: 0; }
+  .node-title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .node-label { font-weight: 700; color: var(--ink); }
+  .d0 .node-label { font-size: 15px; color: #fff; }
+  .d1 .node-label { font-size: 14px; }
+  .d2 .node-label, .d3 .node-label { font-size: 13px; }
+  .node-desc { font-size: 12px; color: var(--ink3); line-height: 1.5; }
+  .d0 .node-desc { color: rgba(255,255,255,.52); }
+  .node-sections { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+  .section-tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; background: var(--bg); border: 1px solid var(--rule); color: var(--ink2); }
+  .d0 .section-tag { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.12); color: rgba(255,255,255,.65); }
+  .node-note { margin-top: 8px; font-size: 11px; font-style: italic; color: var(--ink3); display: flex; gap: 5px; align-items: flex-start; line-height: 1.55; }
+  .d0 .node-note { color: rgba(255,255,255,.38); }
+  .count-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; flex-shrink: 0; margin-top: 2px; background: var(--bg); border: 1px solid var(--rule); color: var(--ink4); }
+  .d0 .count-badge { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.1); color: rgba(255,255,255,.35); }
+  .node-children { margin-top: 6px; display: flex; flex-direction: column; gap: 5px; }
+  .children-d2, .children-d3 { margin-left: 18px; padding-left: 14px; border-left: 1.5px solid var(--rule); }
+
+  /* ── UTILITY GRID ── */
+  .utility-section { margin-top: 8px; }
+  .utility-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding-left: 4px; }
+  .utility-label { font-size: 10px; font-weight: 800; color: var(--ink3); text-transform: uppercase; letter-spacing: 1.5px; white-space: nowrap; }
+  .utility-rule { flex: 1; height: 1px; background: var(--rule); }
+  .utility-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px,1fr)); gap: 8px; }
+  .utility-card { background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; padding: 11px 14px; }
+  .utility-card-title { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-weight: 600; font-size: 13px; }
+  .utility-card-desc { font-size: 11px; color: var(--ink3); margin-top: 5px; }
+  .utility-card-note { font-size: 11px; color: var(--ink3); margin-top: 4px; font-style: italic; }
+
+  /* ── CMS BLOCK ── */
+  .cms-block { background: var(--paper); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.04); margin-bottom: 20px; }
+  .cms-header { padding: 15px 20px; background: var(--cl-bg); display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid var(--rule); }
+  .cms-header.closed { border-bottom: none; }
+  .cms-title { font-size: 14px; font-weight: 800; color: #065F46; }
+  .cms-count { font-size: 11px; color: #065F46; background: #A7F3D0; padding: 2px 8px; border-radius: 4px; font-weight: 700; }
+  .cms-sub { font-size: 12px; color: #047857; }
+  .cms-grid { padding: 18px 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(270px,1fr)); gap: 12px; }
+  .cms-card { background: var(--bg); border: 1px solid var(--rule); border-radius: 8px; padding: 13px 15px; }
+  .cms-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .cms-card-name { font-weight: 700; font-size: 13px; }
+  .cms-card-count { font-size: 10px; color: var(--ink3); background: var(--paper); border: 1px solid var(--rule); padding: 2px 7px; border-radius: 4px; }
+  .cms-fields { display: flex; flex-wrap: wrap; gap: 4px; }
+  .cms-field { font-size: 10px; color: var(--ink2); background: var(--paper); border: 1px solid var(--rule); padding: 2px 7px; border-radius: 4px; }
+
+  /* ── NOTES GRID ── */
+  .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 12px; }
+  .note-card { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; }
+  .note-card-title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .note-card-body { font-size: 12px; color: var(--ink3); line-height: 1.65; }
+
+  /* ── FOOTER ── */
+  .footer { margin-top: 32px; padding-top: 18px; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .footer-text { font-size: 11px; color: var(--ink4); }
+  .footer-badges { display: flex; gap: 6px; }
+
+  /* ══════════════════════════════════════════════════
+     DIAGRAM SECTION — ZOOMABLE CANVAS
+  ══════════════════════════════════════════════════ */
+
+  .diagram-section {
+    margin-bottom: 32px;
+  }
+
+  .diagram-section-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .diagram-section-title {
+    font-size: 10px; font-weight: 800; color: var(--ink3);
+    text-transform: uppercase; letter-spacing: 1.5px;
+  }
+  .diagram-section-rule { flex: 1; height: 1px; background: var(--rule); }
+
+  /* Zoom controls */
+  .zoom-controls {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .zoom-btn {
+    width: 30px; height: 30px;
+    background: var(--paper); border: 1px solid var(--rule);
+    border-radius: 7px; cursor: pointer; font-size: 15px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink2); transition: all .12s;
+    user-select: none;
+  }
+  .zoom-btn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .zoom-level {
+    font-size: 12px; font-weight: 600; color: var(--ink3);
+    min-width: 44px; text-align: center;
+    background: var(--bg); border: 1px solid var(--rule);
+    border-radius: 6px; padding: 4px 8px;
+  }
+  .zoom-hint {
+    font-size: 11px; color: var(--ink4); margin-left: 6px;
+  }
+
+  /* Canvas viewport */
+  .diagram-viewport {
+    width: 100%;
+    height: 600px;
+    background: var(--paper);
+    border: 1.5px solid var(--rule);
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    cursor: grab;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04), inset 0 0 0 1px rgba(0,0,0,.02);
+  }
+  .diagram-viewport:active { cursor: grabbing; }
+  .diagram-viewport.panning { cursor: grabbing; }
+
+  /* Grid background */
+  .diagram-viewport::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle, #D1D5DB 1px, transparent 1px);
+    background-size: 24px 24px;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* The canvas that gets transformed */
+  #diagramCanvas {
+    position: absolute;
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+
+  /* Mini-map */
+  .minimap {
+    position: absolute; bottom: 14px; right: 14px;
+    width: 160px; height: 90px;
+    background: rgba(255,255,255,0.92);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,.1);
+    pointer-events: none;
+  }
+  .minimap-viewport-indicator {
+    position: absolute;
+    border: 1.5px solid #3B82F6;
+    border-radius: 3px;
+    background: rgba(59,130,246,0.08);
+    pointer-events: none;
+  }
+
+  /* Tooltip */
+  .node-tooltip {
+    position: fixed;
+    background: var(--ink);
+    color: #fff;
+    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    pointer-events: none;
+    z-index: 1000;
+    max-width: 260px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.2);
+    display: none;
+    line-height: 1.5;
+  }
+  .node-tooltip .tt-title { font-weight: 700; margin-bottom: 3px; font-size: 13px; }
+  .node-tooltip .tt-url { font-family: monospace; font-size: 10px; color: rgba(255,255,255,.5); margin-bottom: 5px; }
+  .node-tooltip .tt-desc { color: rgba(255,255,255,.7); font-size: 11px; }
+
+  /* ── REQUEST A DEMO MODAL ── */
+  .demo-trigger-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #2563EB; color: #fff;
+    font-size: 11px; font-weight: 700;
+    padding: 5px 13px; border-radius: 6px;
+    border: none; cursor: pointer;
+    letter-spacing: .2px; white-space: nowrap;
+    transition: background .15s, transform .1s;
+    margin-top: 10px;
+  }
+  .demo-trigger-btn:hover { background: #1D4ED8; transform: translateY(-1px); }
+
+  .modal-backdrop {
+    display: none; position: fixed; inset: 0; z-index: 9998;
+    background: rgba(15,15,14,.55); backdrop-filter: blur(4px);
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-backdrop.open { display: flex; }
+
+  .modal {
+    background: #fff; border-radius: 16px;
+    width: 100%; max-width: 560px; max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 64px rgba(0,0,0,.22);
+    animation: modalIn .18s ease;
+  }
+  @keyframes modalIn { from { opacity:0; transform:translateY(12px) scale(.97); } to { opacity:1; transform:none; } }
+
+  .modal-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 24px 24px 0;
+  }
+  .modal-close {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--bg); border: 1px solid var(--rule);
+    cursor: pointer; font-size: 16px; color: var(--ink3);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all .12s;
+  }
+  .modal-close:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+  .modal-body { padding: 20px 24px 28px; }
+
+  .modal-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #2563EB; margin-bottom: 6px; }
+  .modal-title { font-size: 22px; font-weight: 800; letter-spacing: -.4px; color: var(--ink); margin-bottom: 6px; }
+  .modal-sub { font-size: 13px; color: var(--ink3); margin-bottom: 22px; line-height: 1.6; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }
+
+  .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+  .field label { font-size: 12px; font-weight: 700; color: var(--ink2); }
+  .field .req { color: #2563EB; }
+  .field input, .field select, .field textarea {
+    border: 1.5px solid var(--rule); border-radius: 8px;
+    padding: 9px 12px; font-size: 13px; font-family: inherit;
+    color: var(--ink); background: #fff; outline: none; width: 100%;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+  }
+  .field input::placeholder, .field textarea::placeholder { color: var(--ink4); }
+  .field textarea { resize: vertical; min-height: 80px; }
+  .field select {
+    appearance: none; cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23737370' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
+  }
+
+  .consent-row { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 18px; }
+  .consent-row input[type=checkbox] { width: 15px; height: 15px; accent-color: #2563EB; margin-top: 2px; flex-shrink: 0; cursor: pointer; }
+  .consent-row label { font-size: 11px; color: var(--ink3); line-height: 1.5; cursor: pointer; }
+
+  .submit-btn {
+    width: 100%; padding: 12px;
+    background: var(--ink); color: #fff;
+    border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background .15s, transform .1s;
+  }
+  .submit-btn:hover { background: #1a1a19; transform: translateY(-1px); }
+  .submit-btn:disabled { opacity: .6; pointer-events: none; }
+
+  .form-note { text-align: center; font-size: 11px; color: var(--ink4); margin-top: 10px; }
+
+  /* success */
+  .modal-success { display: none; text-align: center; padding: 20px 0 8px; }
+  .modal-success.show { display: block; }
+  .modal-form-wrap.hide { display: none; }
+  .success-circle { width: 52px; height: 52px; border-radius: 50%; background: #F0FDF4; border: 2px solid #86EFAC; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 14px; }
+  .success-title { font-size: 18px; font-weight: 800; color: var(--ink); margin-bottom: 8px; }
+  .success-desc { font-size: 13px; color: var(--ink3); line-height: 1.6; }
+
+  /* ── FULLSCREEN OVERLAY ── */
+  .fullscreen-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 9999;
+    background: #fff;
+    flex-direction: column;
+  }
+  .fullscreen-overlay.active { display: flex; }
+
+  .fs-topbar {
+    height: 52px; background: var(--ink); color: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  }
+  .fs-topbar-left { display: flex; align-items: center; gap: 12px; }
+  .fs-title { font-weight: 700; font-size: 13px; color: rgba(255,255,255,.7); }
+  .fs-zoom-controls { display: flex; align-items: center; gap: 6px; }
+  .fs-close {
+    background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15);
+    color: #fff; border-radius: 8px; padding: 6px 14px;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    transition: background .12s;
+  }
+  .fs-close:hover { background: rgba(255,255,255,.2); }
+
+  .fs-viewport {
+    flex: 1; position: relative; overflow: hidden; cursor: grab;
+    background: var(--bg);
+  }
+  .fs-viewport::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle, #D1D5DB 1px, transparent 1px);
+    background-size: 24px 24px;
+    opacity: 0.4; pointer-events: none;
+  }
+  .fs-viewport:active { cursor: grabbing; }
+  #fsCanvas { position: absolute; transform-origin: 0 0; will-change: transform; }
+
+  .fs-minimap {
+    position: absolute; bottom: 16px; right: 16px;
+    width: 180px; height: 100px;
+    background: rgba(255,255,255,.93);
+    border: 1px solid var(--rule);
+    border-radius: 8px; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,.1);
+    pointer-events: none;
+  }
+  .fs-minimap-indicator {
+    position: absolute;
+    border: 1.5px solid #3B82F6;
+    border-radius: 3px;
+    background: rgba(59,130,246,.08);
+    pointer-events: none;
+  }
+
+  /* Expand button on the diagram panel */
+  .expand-btn {
+    width: 30px; height: 30px;
+    background: var(--paper); border: 1px solid var(--rule);
+    border-radius: 7px; cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink2); transition: all .12s;
+    user-select: none; margin-left: 6px;
+  }
+  .expand-btn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+  @media (max-width: 640px) {
+    .topbar-stats { display: none; }
+    .wrap { padding: 16px 14px 40px; }
+    .diagram-viewport { height: 400px; }
+    .zoom-hint { display: none; }
+    .minimap { display: none; }
+    .demo-btn { font-size: 11px; padding: 6px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-brand">MCC</span>
+    <div class="topbar-div"></div>
+    <span class="topbar-sub">Information Architecture · Webflow Redesign</span>
+  </div>
+  <div class="topbar-stats">
+    <div class="stat"><div class="stat-n">14+</div><div class="stat-l">Static Pages</div></div>
+    <div class="stat"><div class="stat-n">4</div><div class="stat-l">CMS Templates</div></div>
+    <div class="stat"><div class="stat-n">2</div><div class="stat-l">CMS Lists</div></div>
+    <div class="stat"><div class="stat-n">6</div><div class="stat-l">Collections</div></div>
+    <div class="stat"><div class="stat-n">4</div><div class="stat-l">Utility Pages</div></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <span class="legend-title">Page types:</span>
+    <div class="legend-item"><span class="badge badge-static">Static</span> Fixed content</div>
+    <div class="legend-item"><span class="badge badge-cms_list">CMS List</span> Auto-generated list</div>
+    <div class="legend-item"><span class="badge badge-cms_tpl">CMS Template</span> One template × N pages</div>
+    <div class="legend-item"><span class="badge badge-utility">Utility</span> System pages</div>
+    <div class="legend-hint">
+      <span>💡 = Webflow note</span>
+      <span>·</span>
+      <span>▾ click to expand</span>
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="search-bar">
+    <span style="color:var(--ink4);font-size:14px">🔍</span>
+    <input type="text" id="searchInput" placeholder="Search pages, URLs, sections…" oninput="handleSearch(this.value)">
+    <button class="search-clear" onclick="clearSearch()" id="clearBtn" style="display:none">✕ Clear</button>
+  </div>
+
+  <!-- CALLOUT -->
+  <div class="callout">
+    <div class="callout-icon">📋</div>
+    <div>
+      <div class="callout-title">Events Page — Architecture Decision</div>
+      <div class="callout-body">
+        A single <code>/events</code> page shows both upcoming and past events.
+        Users filter by <strong>Status (Upcoming / Past)</strong> and <strong>Type (All / Webinars / Podcasts / Live)</strong>.
+        One CMS Template — Webflow Conditional Visibility handles the rest. <strong>No separate /archive URL needed.</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- TREE -->
+  <div class="tree" id="tree"></div>
+
+  <!-- ══ DIAGRAM SECTION ══ -->
+  <div class="diagram-section">
+    <div class="diagram-section-header">
+      <span class="diagram-section-title">Visual Diagram</span>
+      <div class="diagram-section-rule"></div>
+      <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoomOut()" title="Zoom out">−</button>
+        <span class="zoom-level" id="zoomLevel">100%</span>
+        <button class="zoom-btn" onclick="zoomIn()" title="Zoom in">+</button>
+        <button class="zoom-btn" onclick="resetView()" title="Fit to screen" style="width:auto;padding:0 10px;font-size:11px;font-weight:700">Fit</button>
+        <button class="expand-btn" onclick="openFullscreen()" title="Expand to full screen">⛶</button>
+        <span class="zoom-hint">Scroll to zoom · Drag to pan</span>
+      </div>
+    </div>
+
+    <div class="diagram-viewport" id="viewport">
+      <div id="diagramCanvas"></div>
+      <div class="minimap" id="minimap">
+        <div class="minimap-viewport-indicator" id="minimapIndicator"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOOLTIP -->
+  <div class="node-tooltip" id="tooltip">
+    <div class="tt-title" id="tt-title"></div>
+    <div class="tt-url" id="tt-url"></div>
+    <div class="tt-desc" id="tt-desc"></div>
+  </div>
+
+<!-- ══ REQUEST A DEMO MODAL ══ -->
+<div class="modal-backdrop" id="demoModal" onclick="handleBackdropClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-eyebrow">Get in touch</div>
+        <div class="modal-title">Request a Demo</div>
+        <div class="modal-sub">We'll get back to you within 1 business day.</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="modal-form-wrap" id="modalFormWrap">
+        <div class="form-row">
+          <div class="field"><label>First Name <span class="req">*</span></label><input type="text" id="mFirstName" placeholder="Jane"></div>
+          <div class="field"><label>Last Name <span class="req">*</span></label><input type="text" id="mLastName" placeholder="Smith"></div>
+        </div>
+        <div class="field"><label>Work Email <span class="req">*</span></label><input type="email" id="mEmail" placeholder="jane@company.com"></div>
+        <div class="form-row">
+          <div class="field"><label>Company <span class="req">*</span></label><input type="text" id="mCompany" placeholder="Acme Corp"></div>
+          <div class="field"><label>Job Title</label><input type="text" id="mTitle" placeholder="CFO, Finance Manager…"></div>
+        </div>
+        <div class="field">
+          <label>What are you most interested in?</label>
+          <select id="mInterest">
+            <option value="">Select a service…</option>
+            <option>FP&A / Financial Planning</option>
+            <option>Fractional CFO</option>
+            <option>Process Optimization</option>
+            <option>Software Implementation (Vena, etc.)</option>
+            <option>Startup Growth Advisory</option>
+            <option>Not sure yet — just exploring</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tell us about your challenge</label>
+          <textarea id="mMessage" placeholder="What's the main challenge you're trying to solve?"></textarea>
+        </div>
+        <div class="consent-row">
+          <input type="checkbox" id="mConsent">
+          <label for="mConsent">I agree to be contacted by MCC. I can unsubscribe at any time.</label>
+        </div>
+        <button class="submit-btn" id="mSubmitBtn" onclick="submitModal()">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7.5h11M9 3l4 4.5-4 4.5"/></svg>
+          Book My Demo
+        </button>
+        <div class="form-note">🔒 Your information is secure and will never be shared.</div>
+      </div>
+
+      <div class="modal-success" id="modalSuccess">
+        <div class="success-circle">✅</div>
+        <div class="success-title">Request received!</div>
+        <div class="success-desc">Thanks for reaching out. A member of the MCC team will contact you within 1 business day to schedule your demo.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="fullscreen-overlay" id="fullscreenOverlay">
+  <div class="fs-topbar">
+    <div class="fs-topbar-left">
+      <span style="font-weight:800;font-size:15px">MCC</span>
+      <div style="width:1px;height:18px;background:rgba(255,255,255,.15)"></div>
+      <span class="fs-title">Site Structure — Visual Diagram</span>
+    </div>
+    <div class="fs-zoom-controls">
+      <button class="zoom-btn" onclick="fsZoomOut()" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.15);color:#fff">−</button>
+      <span class="zoom-level" id="fsZoomLevel" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.15);color:rgba(255,255,255,.7)">100%</span>
+      <button class="zoom-btn" onclick="fsZoomIn()" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.15);color:#fff">+</button>
+      <button class="zoom-btn" onclick="fsFit()" style="width:auto;padding:0 10px;font-size:11px;font-weight:700;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.15);color:#fff">Fit</button>
+      <button class="fs-close" onclick="closeFullscreen()">✕ Close</button>
+    </div>
+  </div>
+  <div class="fs-viewport" id="fsViewport">
+    <div id="fsCanvas"></div>
+    <div class="fs-minimap" id="fsMinimap"></div>
+  </div>
+</div>
+
+  <!-- CMS COLLECTIONS -->
+  <div class="cms-block">
+    <div class="cms-header" id="cmsHeader" onclick="toggleCms()">
+      <span class="cms-title">▾ Webflow CMS Collections</span>
+      <span class="cms-count">6 collections</span>
+      <span class="cms-sub">— Database schema for all dynamic content</span>
+    </div>
+    <div class="cms-grid" id="cmsGrid"></div>
+  </div>
+
+  <!-- WEBFLOW NOTES -->
+  <div class="notes-grid" id="notesGrid"></div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-text">meetmcc.co · Information Architecture v2.0 · Webflow Redesign</span>
+    <div class="footer-badges">
+      <span class="badge badge-static">Static</span>
+      <span class="badge badge-cms_list">CMS List</span>
+      <span class="badge badge-cms_tpl">CMS Template</span>
+      <span class="badge badge-utility">Utility</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// DATA
+// ════════════════════════════════════════════════════════════
+const IA = [
+  {
+    id:"home", label:"Home", url:"/", type:"static",
+    desc:"Single-scroll landing page — primary entry point",
+    sections:["Hero + Primary CTA","Client Logo Strip","Wall of Love Preview","Future-ready Tools","Integration Partners","Tailored Solutions (4 pillars)","The MCC Team","Contact Block"],
+    note:"All sections are anchor-scroll. No sub-pages — everything lives on the homepage.",
+    children:[
+      { id:"accelerate", label:"MCC Accelerate", url:"/accelerate", type:"static",
+        desc:"Dedicated product page for the Accelerate offering",
+        sections:["Integration & Reporting","Planning & Forecasting","Collaboration","Guarantee & Support (7-day / 30-day)","FAQ"],
+        note:"Accessible via nav dropdown. Single page with anchor navigation.", children:[] },
+      { id:"services", label:"Services", url:"/services", type:"static",
+        desc:"Full overview of all MCC service offerings",
+        sections:["Financial Intelligence & Analytics","Operational Optimization","Expert Industry Solutions","Startup Growth Advisory"],
+        note:"Direct nav link — no dropdown.", children:[] },
+      { id:"solutions", label:"Solutions", url:"/solutions", type:"static",
+        desc:"Hub page: browse solutions by industry or use case",
+        sections:["Filter toggle: Industries / Use Cases","Card grid of solutions","CTA to book a consultation"],
+        note:"Nav dropdown links directly to industry or use case sub-pages.",
+        children:[
+          { id:"sol-ind", label:"Industry Page", url:"/solutions/[industry]", type:"cms_tpl",
+            desc:"Individual page for each industry vertical (×7)",
+            sections:["Industry challenge","MCC approach","Results","CTA"],
+            note:"Non-Profit · Biotech · Hospitality · Mining · Prof. Services · Manufacturing · SaaS", children:[] },
+          { id:"sol-uc", label:"Use Case Page", url:"/solutions/[use-case]", type:"cms_tpl",
+            desc:"Individual page for each use case (×4)",
+            sections:["Problem description","How MCC solves it","Tools used","CTA"],
+            note:"Budgeting & Forecasting · Reporting · Consolidations · Account Reconciliation", children:[] },
+        ] },
+      { id:"wol", label:"Wall of Love", url:"/wall-of-love", type:"static",
+        desc:"Full testimonials page — video + text reviews",
+        sections:["Video testimonials","Text reviews with logos","Filter by company / role","CTA"],
+        note:"Powered by CMS Collection 'Testimonials'.", children:[] },
+      { id:"events", label:"Events", url:"/events", type:"cms_list",
+        desc:"Single hub — upcoming and archived events with filters",
+        sections:["Filter: All / Webinars / Podcasts / Live","Status toggle: Upcoming / Past","Event cards","Photo gallery from past events"],
+        note:"One page. Status + event_type fields drive filtering and conditional content on the detail page.",
+        children:[
+          { id:"ev-up", label:"Upcoming Event", url:"/events/[slug]", type:"cms_tpl",
+            desc:"Registration page for a future event, webinar, or podcast",
+            sections:["Title, type, speakers","Date / time / location or link","Full description & agenda","Registration form","Related events"],
+            note:"Conditional visibility: if type='live' → address block. If type='webinar' → Zoom link.", children:[] },
+          { id:"ev-ar", label:"Archived Event", url:"/events/[slug]", type:"cms_tpl",
+            desc:"Post-event page — same template, blocks shown based on type",
+            sections:["[Online] Embedded video recording","[Podcast] Audio player + notes","[Live] Recap: description, speakers, photos","Related archived events"],
+            note:"Same CMS Template. Webflow Conditional Visibility toggles by event_type and status. One template, three layouts.", children:[] },
+        ] },
+      { id:"resources", label:"Resources", url:"/resources", type:"static",
+        desc:"Navigation hub — corporate info, content, and recognition. Replaces 'About Us' in the nav.",
+        sections:["Links to About Us, Blog, Our History, Awards & Recognition"],
+        note:"Nav label changes from 'About Us' to 'Resources'. All sub-pages remain at their own URLs.",
+        children:[
+          { id:"about", label:"About Us", url:"/about", type:"static",
+            desc:"Company page with anchor-based sub-sections",
+            sections:["Our Mission","Our Team (CMS-powered)","Key stats","CTA — Join Our Team"],
+            note:"Accessible via Resources dropdown: /about#mission · /about#team · /about/careers.",
+            children:[
+              { id:"careers", label:"Careers", url:"/about/careers", type:"static",
+                desc:"Open positions and team culture page",
+                sections:["Team values & culture","Open roles","Apply CTA"],
+                note:"Can use an iframe embed (Ashby, Lever) or a Webflow form.", children:[] },
+            ] },
+          { id:"blog", label:"Blog", url:"/blog", type:"cms_list",
+            desc:"Article listing — CMS Collection List",
+            sections:["Featured article hero","Card grid: title, author, date, tags, read time","Filter by tag / category","Pagination or Load More"],
+            note:"Sorted by date descending. Tags = multi-reference field.",
+            children:[
+              { id:"blog-art", label:"Blog Article", url:"/blog/[slug]", type:"cms_tpl",
+                desc:"Individual article page — CMS Template",
+                sections:["Title, author, date, tags, read time","Rich text body","Related articles","Book a Call CTA"],
+                note:"SEO fields from CMS. OG image from thumbnail. Auto-included in sitemap.xml.", children:[] },
+            ] },
+          { id:"history", label:"Our History", url:"/about/history", type:"static",
+            desc:"Company timeline — how MCC was founded and key milestones",
+            sections:["Founding story","Timeline of key milestones (year by year)","Team growth over time","Vision for the future","CTA — Work with us"],
+            note:"Static page, manually updated. Can be built as a visual timeline component in Webflow.", children:[] },
+          { id:"awards", label:"Awards & Recognition", url:"/about/awards", type:"static",
+            desc:"Showcase of awards, certifications, and industry recognition",
+            sections:[
+              "Hero: headline + brief achievement summary",
+              "Awards grid: badge/logo, award name, year, awarding organization",
+              "Featured award highlight: Marketing Partner of the Year",
+              "Press quotes or media mentions",
+              "CTA — Book a Demo"
+            ],
+            note:"Also referenced in the Footer under a 'Recognition' section with award badge logos. Award badges can be CMS-powered for easy updates.", children:[] },
+        ] },
+    ]
+  },
+  {
+    id:"_utility", label:"Utility Pages", url:null, type:"utility", desc:"", note:"", sections:[],
+    children:[
+      { id:"contact", label:"Contact Us", url:"/contact", type:"static", desc:"Contact form, Calendly embed, office locations", sections:["Contact form","Book a Call (Calendly)","Office locations / time zones"], note:"Primary CTA button in nav links here.", children:[] },
+      { id:"404", label:"404 Not Found", url:"/404", type:"utility", desc:"Custom 404 page", sections:["Error message","Quick nav links"], note:"Configure in Webflow Project Settings → 404 Page.", children:[] },
+      { id:"privacy", label:"Privacy Policy", url:"/privacy-policy", type:"utility", desc:"Privacy policy — GDPR / CCPA required", sections:[], note:"Footer link.", children:[] },
+      { id:"terms", label:"Terms of Service", url:"/terms", type:"utility", desc:"Terms of use", sections:[], note:"Footer link.", children:[] },
+    ]
+  }
+];
+
+const CMS = [
+  { name:"Blog Posts", count:"∞", fields:["Title","Slug","Author","Published Date","Tags (multi-ref)","Read Time","Thumbnail","Rich Text Body","Featured (bool)","Meta Description"] },
+  { name:"Events", count:"∞", fields:["Title","Slug","Status (upcoming/archived)","Event Type (webinar/podcast/live/online)","Date & Time","Location / URL","Speakers (multi-ref)","Description","Video Embed URL","Audio Embed URL","Registration Form","Thumbnail","Photo Gallery"] },
+  { name:"Team Members", count:"~10", fields:["Full Name","Role / Title","Photo","Short Bio","LinkedIn URL","Display Order"] },
+  { name:"Testimonials", count:"∞", fields:["Client Name","Company","Role","Quote","Video URL","Company Logo","Featured (bool)"] },
+  { name:"Speakers", count:"~30", fields:["Full Name","Title","Company","Headshot","Short Bio","LinkedIn URL"] },
+  { name:"Awards", count:"~20", fields:["Award Name","Year","Awarding Organization","Badge / Logo Image","Description","Featured (bool)","Category (award/certification/partnership)"] },
+];
+
+const NOTES = [
+  { icon:"🔀", title:"Conditional Visibility", body:"Events CMS Template uses one layout for all event types. Webflow Conditional Visibility shows/hides blocks (video, audio, registration form, photos) based on event_type and status." },
+  { icon:"🔗", title:"Reference & Multi-Reference Fields", body:"Events → Speakers (multi-ref). Blog Posts → Tags (multi-ref). Testimonials → Featured (bool). Awards → Featured (bool) for footer strip. These power related content blocks and filtered lists." },
+  { icon:"📱", title:"Responsive Breakpoints", body:"Desktop · Tablet · Mobile. Nav dropdown → hamburger on mobile. Events filter bar stacks vertically on small screens." },
+  { icon:"🔍", title:"SEO & Open Graph", body:"All CMS templates pull SEO title, meta description, and OG image from CMS fields. Webflow auto-generates sitemap.xml." },
+  { icon:"🏆", title:"Awards in Footer", body:"Footer includes a 'Recognition' strip showing award badge logos pulled from the Awards CMS collection (Featured = true). Clicking a badge links to /about/awards. Keeps the homepage clean while surfacing credibility on every page." },
+  { icon:"📂", title:"'About Us' → 'Resources' Nav Rename", body:"The top nav item previously labeled 'About Us' is renamed to 'Resources'. The dropdown now contains: About Us, Blog, Our History, Awards & Recognition. This groups all corporate and content pages under one logical umbrella and makes room for History and Awards without cluttering the nav." },
+];
+
+// ════════════════════════════════════════════════════════════
+// TREE RENDER
+// ════════════════════════════════════════════════════════════
+const openState = {};
+function setOpen(id, val) { openState[id] = val; }
+function isOpen(id, depth) { return id in openState ? openState[id] : depth < 2; }
+
+function badge(type) {
+  const L = { static:"Static", cms_list:"CMS List", cms_tpl:"CMS Template", utility:"Utility" };
+  return `<span class="badge badge-${type}">${L[type]||type}</span>`;
+}
+function urlChip(url) { return url ? `<span class="url">${url}</span>` : ''; }
+
+function renderNode(node, depth) {
+  if (node.id === "_utility") {
+    return `<div class="utility-section">
+      <div class="utility-header"><span class="utility-label">Utility Pages</span><div class="utility-rule"></div></div>
+      <div class="utility-grid">${node.children.map(c=>`
+        <div class="utility-card">
+          <div class="utility-card-title"><span>${c.label}</span>${badge(c.type)}</div>
+          ${urlChip(c.url)}
+          ${c.desc?`<div class="utility-card-desc">${c.desc}</div>`:''}
+          ${c.note?`<div class="utility-card-note">💡 ${c.note}</div>`:''}
+        </div>`).join('')}
+      </div></div>`;
+  }
+  const hasC = node.children && node.children.length > 0;
+  const open = isOpen(node.id, depth);
+  const secs = node.sections?.length ? `<div class="node-sections">${node.sections.map(s=>`<span class="section-tag">${s}</span>`).join('')}</div>` : '';
+  const demoBtn = node.id === 'home' ? `<button class="demo-trigger-btn" onclick="event.stopPropagation();openModal()">✦ Request a Demo</button>` : '';
+  const noteHtml = node.note ? `<div class="node-note"><span>💡</span><span>${node.note}</span></div>` : '';
+  const childClass = depth===0?'children-d1':depth===1?'children-d2':'children-d3';
+  const childHtml = hasC ? `<div class="node-children ${childClass}" id="ch-${node.id}" ${open?'':'style="display:none"'}>${node.children.map(c=>renderNode(c,depth+1)).join('')}</div>` : '';
+  return `<div class="node" data-id="${node.id}">
+    <div class="node-head d${depth}" onclick="toggleNode('${node.id}')">
+      ${hasC?`<span class="toggle" id="tog-${node.id}">${open?'▾':'▸'}</span>`:`<span class="no-toggle"></span>`}
+      <div class="node-body">
+        <div class="node-title-row"><span class="node-label">${node.label}</span>${urlChip(node.url)}${badge(node.type)}</div>
+        ${node.desc?`<div class="node-desc">${node.desc}</div>`:''}
+        <div id="det-${node.id}" ${open?'':'style="display:none"'}>${secs}${demoBtn}${noteHtml}</div>
+      </div>
+      ${hasC?`<span class="count-badge">${node.children.length}</span>`:''}
+    </div>${childHtml}</div>`;
+}
+
+function toggleNode(id) {
+  const ch=document.getElementById('ch-'+id), det=document.getElementById('det-'+id), tog=document.getElementById('tog-'+id);
+  if (!ch && !det) return;
+  const wasOpen = isOpen(id,99);
+  setOpen(id,!wasOpen);
+  if(ch) ch.style.display=wasOpen?'none':'';
+  if(det) det.style.display=wasOpen?'none':'';
+  if(tog) tog.textContent=wasOpen?'▸':'▾';
+}
+
+// ════════════════════════════════════════════════════════════
+// SEARCH
+// ════════════════════════════════════════════════════════════
+let allNodes=[];
+function flattenNodes(nodes){ nodes.forEach(n=>{ if(n.id!=='_utility'){allNodes.push(n);if(n.children)flattenNodes(n.children);}else{n.children.forEach(c=>allNodes.push(c));} }); }
+function hl(text,q){ if(!q)return text; const re=new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'); return text.replace(re,'<span class="hl">$1</span>'); }
+function handleSearch(q){
+  q=q.trim().toLowerCase();
+  document.getElementById('clearBtn').style.display=q?'':'none';
+  const tree=document.getElementById('tree');
+  if(!q){tree.innerHTML=IA.map(n=>renderNode(n,0)).join('');return;}
+  const matched=new Set(), ancestors=new Set();
+  function check(node,path){ const text=[node.label,node.url,node.desc,node.note,...(node.sections||[])].join(' ').toLowerCase(); if(text.includes(q)){matched.add(node.id);path.forEach(id=>ancestors.add(id));} if(node.children)node.children.forEach(c=>check(c,[...path,node.id])); }
+  IA.forEach(n=>check(n,[]));
+  function renderF(node,depth){
+    if(node.id==='_utility'){ const mc=node.children.filter(c=>matched.has(c.id)||ancestors.has(c.id)); if(!mc.length)return ''; return `<div class="utility-section"><div class="utility-header"><span class="utility-label">Utility Pages</span><div class="utility-rule"></div></div><div class="utility-grid">${mc.map(c=>`<div class="utility-card"><div class="utility-card-title"><span>${hl(c.label,q)}</span>${badge(c.type)}</div>${urlChip(c.url)}${c.desc?`<div class="utility-card-desc">${hl(c.desc,q)}</div>`:''}${c.note?`<div class="utility-card-note">💡 ${hl(c.note,q)}</div>`:''}</div>`).join('')}</div></div>`; }
+    if(!matched.has(node.id)&&!ancestors.has(node.id))return '';
+    const hasC=node.children&&node.children.length>0;
+    const secs=node.sections?.length?`<div class="node-sections">${node.sections.map(s=>`<span class="section-tag">${hl(s,q)}</span>`).join('')}</div>`:'';
+    const demoBtn2 = node.id==='home' ? `<button class="demo-trigger-btn" onclick="event.stopPropagation();openModal()">✦ Request a Demo</button>` : '';
+    const noteHtml=node.note?`<div class="node-note"><span>💡</span><span>${hl(node.note,q)}</span></div>`:'';
+    const childHtml=hasC?`<div class="node-children ${depth===0?'children-d1':depth===1?'children-d2':'children-d3'}">${node.children.map(c=>renderF(c,depth+1)).join('')}</div>`:'';
+    return `<div class="node"><div class="node-head d${depth}" style="cursor:default"><span class="no-toggle"></span><div class="node-body"><div class="node-title-row"><span class="node-label">${hl(node.label,q)}</span>${urlChip(node.url)}${badge(node.type)}</div>${node.desc?`<div class="node-desc">${hl(node.desc,q)}</div>`:''} ${secs}${demoBtn2}${noteHtml}</div></div>${childHtml}</div>`;
+  }
+  tree.innerHTML=IA.map(n=>renderF(n,0)).join('');
+}
+function clearSearch(){ document.getElementById('searchInput').value=''; handleSearch(''); }
+
+// ════════════════════════════════════════════════════════════
+// DIAGRAM DATA
+// ════════════════════════════════════════════════════════════
+const DTREE = {
+  label:"Home", url:"/", type:"static",
+  desc:"Single-scroll landing page",
+  children:[
+    { label:"MCC Accelerate", url:"/accelerate", type:"static", desc:"Product page for Accelerate offering", children:[] },
+    { label:"Services", url:"/services", type:"static", desc:"Full overview of all MCC services", children:[] },
+    { label:"Solutions", url:"/solutions", type:"static", desc:"Hub: browse by industry or use case",
+      children:[
+        { label:"Industry Page ×7", url:"/solutions/[industry]", type:"cms_tpl", desc:"One page per industry (×7)", children:[] },
+        { label:"Use Case Page ×4", url:"/solutions/[use-case]", type:"cms_tpl", desc:"One page per use case (×4)", children:[] },
+      ]},
+    { label:"Wall of Love", url:"/wall-of-love", type:"static", desc:"Full testimonials page", children:[] },
+    { label:"Events", url:"/events", type:"cms_list", desc:"Hub: upcoming + past events with filters",
+      children:[
+        { label:"Upcoming Event", url:"/events/[slug]", type:"cms_tpl", desc:"Registration page for future events", children:[] },
+        { label:"Archived Event", url:"/events/[slug]", type:"cms_tpl", desc:"Post-event: video / audio / recap",
+          children:[
+            { label:"Online Recording", url:"/events/[slug]", type:"cms_tpl", desc:"Embedded video recording", children:[] },
+            { label:"Podcast Episode", url:"/events/[slug]", type:"cms_tpl", desc:"Audio player + episode notes", children:[] },
+            { label:"Live Event Recap", url:"/events/[slug]", type:"cms_tpl", desc:"Description, speakers, photos", children:[] },
+          ]},
+      ]},
+    { label:"Resources", url:"/resources", type:"static", desc:"About, Blog, History, Awards",
+      children:[
+        { label:"About Us", url:"/about", type:"static", desc:"Company, mission, team",
+          children:[
+            { label:"Careers", url:"/about/careers", type:"static", desc:"Open positions & culture", children:[] },
+          ]},
+        { label:"Blog", url:"/blog", type:"cms_list", desc:"All articles — CMS List",
+          children:[
+            { label:"Blog Article", url:"/blog/[slug]", type:"cms_tpl", desc:"Individual article", children:[] },
+          ]},
+        { label:"Our History", url:"/about/history", type:"static", desc:"Company timeline & milestones", children:[] },
+        { label:"Awards & Recognition", url:"/about/awards", type:"static", desc:"Awards, certifications, press", children:[] },
+      ]},
+    { label:"Contact Us", url:"/contact", type:"static", desc:"Form, Calendly, office locations", children:[] },
+  ]
+};
+
+const UTILITY_D = [
+  { label:"404 Not Found", url:"/404", type:"utility", desc:"Custom 404 page" },
+  { label:"Privacy Policy", url:"/privacy-policy", type:"utility", desc:"GDPR/CCPA required" },
+  { label:"Terms of Service", url:"/terms", type:"utility", desc:"Terms of use" },
+];
+
+// ════════════════════════════════════════════════════════════
+// DIAGRAM LAYOUT & RENDER
+// ════════════════════════════════════════════════════════════
+const NW=160, NH=56, HGAP=22, VGAP=72;
+
+const TYPE_COLORS = {
+  static:   { bg:"#EEF4FF", border:"#818CF8", text:"#3730A3", dot:"#6366F1" },
+  cms_list: { bg:"#ECFDF5", border:"#34D399", text:"#065F46", dot:"#10B981" },
+  cms_tpl:  { bg:"#FEF3C7", border:"#FBBF24", text:"#92400E", dot:"#F59E0B" },
+  utility:  { bg:"#F3F4F6", border:"#D1D5DB", text:"#374151", dot:"#9CA3AF" },
+};
+const TYPE_LABELS = { static:"Static", cms_list:"CMS List", cms_tpl:"CMS Template", utility:"Utility" };
+
+function measure(n){ if(!n.children?.length){n._w=NW;return;} n.children.forEach(measure); const tw=n.children.reduce((s,c)=>s+c._w,0)+HGAP*(n.children.length-1); n._w=Math.max(NW,tw); }
+function layout(n,x,y){ n._x=x+(n._w-NW)/2; n._y=y; if(!n.children?.length)return; let cx=x; n.children.forEach(c=>{layout(c,cx,y+NH+VGAP);cx+=c._w+HGAP;}); }
+function collectNodes(n,a=[]){ a.push(n); (n.children||[]).forEach(c=>collectNodes(c,a)); return a; }
+function collectEdges(n,e=[]){ (n.children||[]).forEach(c=>{e.push({x1:n._x+NW/2,y1:n._y+NH,x2:c._x+NW/2,y2:c._y});collectEdges(c,e);}); return e; }
+
+function buildDiagramSVG(){
+  measure(DTREE);
+  layout(DTREE,0,0);
+  const nodes = collectNodes(DTREE);
+  const edges = collectEdges(DTREE);
+
+  const minX = Math.min(...nodes.map(n=>n._x));
+  const maxX = Math.max(...nodes.map(n=>n._x+NW));
+  const maxY = Math.max(...nodes.map(n=>n._y+NH));
+  const PAD=40;
+  const svgW = maxX-minX+PAD*2;
+  const ox=-minX+PAD;
+
+  // utility row
+  const UW=160, UH=50, UGAP=18;
+  const uTotalW=UTILITY_D.length*UW+(UTILITY_D.length-1)*UGAP;
+  const uStartX=(svgW-uTotalW)/2;
+  const uY=maxY+PAD+56;
+  const svgH=uY+UH+PAD;
+
+  let s=`<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+      <path d="M0,1 L0,7 L6,4 z" fill="#CBD5E1"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#00000015"/>
+    </filter>
+  </defs>`;
+
+  // edges
+  edges.forEach(e=>{
+    const x1=e.x1+ox+PAD, y1=e.y1+PAD, x2=e.x2+ox+PAD, y2=e.y2+PAD;
+    const my=(y1+y2)/2;
+    s+=`<path d="M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}" fill="none" stroke="#CBD5E1" stroke-width="1.5" marker-end="url(#arr)"/>`;
+  });
+
+  // utility divider
+  s+=`<line x1="40" y1="${uY-28}" x2="${svgW-40}" y2="${uY-28}" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="4,4"/>`;
+  s+=`<text x="${svgW/2}" y="${uY-14}" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9.5" font-weight="700" letter-spacing="1.5" fill="#94A3B8">SYSTEM PAGES</text>`;
+
+  // nodes
+  nodes.forEach(n=>{
+    const c=TYPE_COLORS[n.type]||TYPE_COLORS.utility;
+    const nx=n._x+ox+PAD, ny=n._y+PAD;
+    const lbl=n.label.length>20?n.label.slice(0,19)+'…':n.label;
+    const sub=n.url.length>24?n.url.slice(0,23)+'…':n.url;
+    const tl=TYPE_LABELS[n.type]||n.type;
+    s+=`<g class="dnode" data-label="${n.label.replace(/"/g,'&quot;')}" data-url="${n.url}" data-desc="${(n.desc||'').replace(/"/g,'&quot;')}" data-type="${n.type}" style="cursor:pointer">
+      <rect x="${nx}" y="${ny}" width="${NW}" height="${NH}" rx="10" fill="${c.bg}" stroke="${c.border}" stroke-width="1.5" filter="url(#shadow)"/>
+      <circle cx="${nx+13}" cy="${ny+NH/2}" r="5" fill="${c.dot}"/>
+      <text x="${nx+25}" y="${ny+21}" font-family="system-ui,sans-serif" font-size="11.5" font-weight="700" fill="${c.text}">${lbl}</text>
+      <text x="${nx+25}" y="${ny+35}" font-family="ui-monospace,monospace" font-size="9" fill="#94A3B8">${sub}</text>
+      <rect x="${nx+NW-52}" y="${ny+NH-16}" width="46" height="12" rx="3" fill="${c.dot}" opacity="0.18"/>
+      <text x="${nx+NW-49}" y="${ny+NH-6}" font-family="ui-monospace,monospace" font-size="7.5" font-weight="700" fill="${c.text}">${tl}</text>
+    </g>`;
+  });
+
+  // utility nodes
+  UTILITY_D.forEach((n,i)=>{
+    const c=TYPE_COLORS.utility;
+    const nx=uStartX+i*(UW+UGAP), ny=uY;
+    s+=`<g class="dnode" data-label="${n.label}" data-url="${n.url}" data-desc="${n.desc}" data-type="utility" style="cursor:pointer">
+      <rect x="${nx}" y="${ny}" width="${UW}" height="${UH}" rx="10" fill="${c.bg}" stroke="${c.border}" stroke-width="1.5" stroke-dasharray="5,3"/>
+      <circle cx="${nx+13}" cy="${ny+UH/2}" r="4.5" fill="${c.dot}"/>
+      <text x="${nx+25}" y="${ny+19}" font-family="system-ui,sans-serif" font-size="11" font-weight="700" fill="${c.text}">${n.label}</text>
+      <text x="${nx+25}" y="${ny+33}" font-family="ui-monospace,monospace" font-size="9" fill="#94A3B8">${n.url}</text>
+    </g>`;
+  });
+
+  s+=`</svg>`;
+  return { svg:s, w:svgW, h:svgH };
+}
+
+// ════════════════════════════════════════════════════════════
+// ZOOM / PAN ENGINE
+// ════════════════════════════════════════════════════════════
+let scale=1, tx=40, ty=40;
+let isPanning=false, startX=0, startY=0, startTx=0, startTy=0;
+let diagramW=0, diagramH=0;
+const MIN_SCALE=0.15, MAX_SCALE=3;
+
+const viewport = ()=>document.getElementById('viewport');
+const canvas   = ()=>document.getElementById('diagramCanvas');
+
+function applyTransform(){
+  canvas().style.transform=`translate(${tx}px,${ty}px) scale(${scale})`;
+  document.getElementById('zoomLevel').textContent=Math.round(scale*100)+'%';
+  updateMinimap();
+}
+
+function clampTx(v){ return Math.min(40, Math.max(-(diagramW*scale - viewport().clientWidth + 40), v)); }
+function clampTy(v){ return Math.min(40, Math.max(-(diagramH*scale - viewport().clientHeight + 40), v)); }
+
+function zoomAt(mx,my,delta){
+  const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale * delta));
+  const factor = newScale/scale;
+  tx = mx - (mx-tx)*factor;
+  ty = my - (my-ty)*factor;
+  scale = newScale;
+  tx=clampTx(tx); ty=clampTy(ty);
+  applyTransform();
+}
+
+function zoomIn()  { const vp=viewport(); zoomAt(vp.clientWidth/2, vp.clientHeight/2, 1.25); }
+function zoomOut() { const vp=viewport(); zoomAt(vp.clientWidth/2, vp.clientHeight/2, 0.8); }
+
+function resetView(){
+  const vp=viewport();
+  const scaleX=(vp.clientWidth-80)/diagramW;
+  const scaleY=(vp.clientHeight-80)/diagramH;
+  scale=Math.min(1, scaleX, scaleY);
+  tx=(vp.clientWidth - diagramW*scale)/2;
+  ty=40;
+  applyTransform();
+}
+
+// mouse wheel
+function initZoom(){
+  const vp=viewport();
+  vp.addEventListener('wheel', e=>{
+    e.preventDefault();
+    const rect=vp.getBoundingClientRect();
+    const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+    const delta=e.deltaY<0?1.12:0.9;
+    zoomAt(mx,my,delta);
+  }, {passive:false});
+
+  // drag to pan
+  vp.addEventListener('mousedown', e=>{
+    if(e.button!==0)return;
+    isPanning=true; startX=e.clientX; startY=e.clientY; startTx=tx; startTy=ty;
+    vp.classList.add('panning');
+  });
+  window.addEventListener('mousemove', e=>{
+    if(!isPanning)return;
+    tx=clampTx(startTx+(e.clientX-startX));
+    ty=clampTy(startTy+(e.clientY-startY));
+    applyTransform();
+  });
+  window.addEventListener('mouseup', ()=>{ isPanning=false; viewport().classList.remove('panning'); });
+
+  // touch pan & pinch
+  let lastDist=0, lastTouches=[];
+  vp.addEventListener('touchstart', e=>{
+    if(e.touches.length===1){ isPanning=true; startX=e.touches[0].clientX; startY=e.touches[0].clientY; startTx=tx; startTy=ty; }
+    if(e.touches.length===2){ const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); lastDist=d; }
+    e.preventDefault();
+  }, {passive:false});
+  vp.addEventListener('touchmove', e=>{
+    e.preventDefault();
+    if(e.touches.length===1 && isPanning){
+      tx=clampTx(startTx+(e.touches[0].clientX-startX));
+      ty=clampTy(startTy+(e.touches[0].clientY-startY));
+      applyTransform();
+    }
+    if(e.touches.length===2){
+      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+      const cx=(e.touches[0].clientX+e.touches[1].clientX)/2-vp.getBoundingClientRect().left;
+      const cy=(e.touches[0].clientY+e.touches[1].clientY)/2-vp.getBoundingClientRect().top;
+      if(lastDist>0) zoomAt(cx,cy,d/lastDist);
+      lastDist=d;
+    }
+  }, {passive:false});
+  vp.addEventListener('touchend', ()=>{ isPanning=false; lastDist=0; });
+}
+
+// ════════════════════════════════════════════════════════════
+// MINIMAP
+// ════════════════════════════════════════════════════════════
+function updateMinimap(){
+  const mm=document.getElementById('minimap');
+  const ind=document.getElementById('minimapIndicator');
+  const vp=viewport();
+  if(!mm||!ind)return;
+  const mmW=mm.clientWidth, mmH=mm.clientHeight;
+  const scaleX=mmW/diagramW, scaleY=mmH/diagramH;
+  const mmScale=Math.min(scaleX,scaleY);
+  // visible area in diagram coords
+  const visX=-tx/scale, visY=-ty/scale;
+  const visW=vp.clientWidth/scale, visH=vp.clientHeight/scale;
+  ind.style.left=Math.max(0,visX*mmScale)+'px';
+  ind.style.top=Math.max(0,visY*mmScale)+'px';
+  ind.style.width=Math.min(mmW,visW*mmScale)+'px';
+  ind.style.height=Math.min(mmH,visH*mmScale)+'px';
+}
+
+// ════════════════════════════════════════════════════════════
+// TOOLTIP
+// ════════════════════════════════════════════════════════════
+function initTooltip(){
+  const tt=document.getElementById('tooltip');
+  document.getElementById('diagramCanvas').addEventListener('mouseover',e=>{
+    const g=e.target.closest('.dnode');
+    if(!g)return;
+    document.getElementById('tt-title').textContent=g.dataset.label;
+    document.getElementById('tt-url').textContent=g.dataset.url;
+    document.getElementById('tt-desc').textContent=g.dataset.desc;
+    tt.style.display='block';
+  });
+  document.getElementById('diagramCanvas').addEventListener('mousemove',e=>{
+    tt.style.left=(e.clientX+14)+'px';
+    tt.style.top=(e.clientY-10)+'px';
+  });
+  document.getElementById('diagramCanvas').addEventListener('mouseleave',()=>{ tt.style.display='none'; });
+}
+
+// ════════════════════════════════════════════════════════════
+// MINIMAP SVG (tiny version)
+// ════════════════════════════════════════════════════════════
+function renderMinimap(svgW, svgH, nodes_mm, edges_mm, uNodes){
+  const mm=document.getElementById('minimap');
+  const mmW=mm.clientWidth, mmH=mm.clientHeight;
+  const sc=Math.min((mmW-4)/svgW,(mmH-4)/svgH);
+  let s=`<svg xmlns="http://www.w3.org/2000/svg" width="${mmW}" height="${mmH}" style="display:block">`;
+  edges_mm.forEach(e=>{
+    const x1=e.x1*sc+2,y1=e.y1*sc+2,x2=e.x2*sc+2,y2=e.y2*sc+2,my=(y1+y2)/2;
+    s+=`<path d="M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}" fill="none" stroke="#CBD5E1" stroke-width="0.5"/>`;
+  });
+  nodes_mm.forEach(n=>{
+    const c=TYPE_COLORS[n.type]||TYPE_COLORS.utility;
+    s+=`<rect x="${n._x*sc+2}" y="${n._y*sc+2}" width="${NW*sc}" height="${NH*sc}" rx="2" fill="${c.bg}" stroke="${c.border}" stroke-width="0.5"/>`;
+  });
+  uNodes.forEach((n,i)=>{
+    const c=TYPE_COLORS.utility;
+    // recompute position same as main
+    const UW2=160,UGAP2=18;
+    const uTW=uNodes.length*UW2+(uNodes.length-1)*UGAP2;
+    const uSX=(svgW-uTW)/2;
+    const uY2=Math.max(...nodes_mm.map(n=>n._y+NH))+40+56;
+    const nx2=uSX+i*(UW2+UGAP2);
+    s+=`<rect x="${nx2*sc+2}" y="${uY2*sc+2}" width="${UW2*sc}" height="50*${sc}" rx="2" fill="${c.bg}" stroke="${c.border}" stroke-width="0.5" stroke-dasharray="2,1"/>`;
+  });
+  s+=`</svg>`;
+  mm.innerHTML=s;
+  // re-add the indicator
+  const ind=document.createElement('div');
+  ind.className='minimap-viewport-indicator';
+  ind.id='minimapIndicator';
+  mm.appendChild(ind);
+  updateMinimap();
+}
+
+// ════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', ()=>{
+  flattenNodes(IA);
+
+  // tree
+  document.getElementById('tree').innerHTML = IA.map(n=>renderNode(n,0)).join('');
+
+  // cms
+  document.getElementById('cmsGrid').innerHTML = CMS.map(col=>`
+    <div class="cms-card">
+      <div class="cms-card-header"><span class="cms-card-name">📁 ${col.name}</span><span class="cms-card-count">${col.count}</span></div>
+      <div class="cms-fields">${col.fields.map(f=>`<span class="cms-field">${f}</span>`).join('')}</div>
+    </div>`).join('');
+
+  // notes
+  document.getElementById('notesGrid').innerHTML = NOTES.map(n=>`
+    <div class="note-card">
+      <div class="note-card-title"><span>${n.icon}</span>${n.title}</div>
+      <div class="note-card-body">${n.body}</div>
+    </div>`).join('');
+
+  // diagram
+  const {svg, w, h} = buildDiagramSVG();
+  diagramW=w; diagramH=h;
+  document.getElementById('diagramCanvas').innerHTML=svg;
+
+  // minimap
+  const mmNodes=collectNodes(DTREE);
+  const mmEdges=collectEdges(DTREE);
+  const minX2=Math.min(...mmNodes.map(n=>n._x));
+  const ox2=-minX2+40+40;
+  mmNodes.forEach(n=>{n._x+=ox2; n._y+=40;});
+  mmEdges.forEach(e=>{e.x1+=ox2;e.x2+=ox2;e.y1+=40;e.y2+=40;});
+  renderMinimap(w,h,mmNodes,mmEdges,UTILITY_D);
+
+  initZoom();
+  initTooltip();
+
+  // fit on load
+  setTimeout(resetView, 60);
+
+  // double-click topbar = expand all
+  document.querySelector('.topbar').addEventListener('dblclick',()=>{
+    allNodes.forEach(n=>setOpen(n.id,true));
+    document.getElementById('tree').innerHTML=IA.map(n=>renderNode(n,0)).join('');
+  });
+});
+
+// CMS toggle
+let cmsOpen=true;
+function toggleCms(){
+  cmsOpen=!cmsOpen;
+  document.getElementById('cmsGrid').style.display=cmsOpen?'':'none';
+  const h=document.getElementById('cmsHeader');
+  h.className='cms-header'+(cmsOpen?'':' closed');
+  h.querySelector('.cms-title').textContent=(cmsOpen?'▾':'▸')+' Webflow CMS Collections';
+}
+
+// ════════════════════════════════════════════════════════════
+// DEMO MODAL
+// ════════════════════════════════════════════════════════════
+function openModal(){
+  document.getElementById('demoModal').classList.add('open');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>document.getElementById('mFirstName').focus(), 120);
+}
+function closeModal(){
+  document.getElementById('demoModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+function handleBackdropClick(e){
+  if(e.target===document.getElementById('demoModal')) closeModal();
+}
+function submitModal(){
+  const fn=document.getElementById('mFirstName').value.trim();
+  const ln=document.getElementById('mLastName').value.trim();
+  const em=document.getElementById('mEmail').value.trim();
+  const co=document.getElementById('mCompany').value.trim();
+  const cs=document.getElementById('mConsent').checked;
+  if(!fn){ alert('Please enter your first name.'); return; }
+  if(!ln){ alert('Please enter your last name.'); return; }
+  if(!em||!em.includes('@')){ alert('Please enter a valid email address.'); return; }
+  if(!co){ alert('Please enter your company name.'); return; }
+  if(!cs){ alert('Please agree to be contacted.'); return; }
+  const btn=document.getElementById('mSubmitBtn');
+  btn.textContent='Sending…'; btn.disabled=true;
+  setTimeout(()=>{
+    document.getElementById('modalFormWrap').classList.add('hide');
+    document.getElementById('modalSuccess').classList.add('show');
+  }, 800);
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    closeModal();
+    closeFullscreen();
+  }
+});
+// ════════════════════════════════════════════════════════════
+let fsScale=1, fsTx=40, fsTy=40;
+let fsIsPanning=false, fsStartX=0, fsStartY=0, fsStartTx=0, fsStartTy=0;
+let fsDiagramW=0, fsDiagramH=0;
+
+const fsVP  = ()=>document.getElementById('fsViewport');
+const fsCvs = ()=>document.getElementById('fsCanvas');
+
+function fsApplyTransform(){
+  fsCvs().style.transform=`translate(${fsTx}px,${fsTy}px) scale(${fsScale})`;
+  document.getElementById('fsZoomLevel').textContent=Math.round(fsScale*100)+'%';
+  fsMmUpdate();
+}
+function fsClampTx(v){ return Math.min(60,Math.max(-(fsDiagramW*fsScale-fsVP().clientWidth+60),v)); }
+function fsClampTy(v){ return Math.min(60,Math.max(-(fsDiagramH*fsScale-fsVP().clientHeight+60),v)); }
+
+function fsZoomAt(mx,my,delta){
+  const ns=Math.min(MAX_SCALE,Math.max(MIN_SCALE,fsScale*delta));
+  const f=ns/fsScale;
+  fsTx=mx-(mx-fsTx)*f; fsTy=my-(my-fsTy)*f; fsScale=ns;
+  fsTx=fsClampTx(fsTx); fsTy=fsClampTy(fsTy);
+  fsApplyTransform();
+}
+function fsZoomIn()  { const vp=fsVP(); fsZoomAt(vp.clientWidth/2,vp.clientHeight/2,1.25); }
+function fsZoomOut() { const vp=fsVP(); fsZoomAt(vp.clientWidth/2,vp.clientHeight/2,0.8); }
+function fsFit(){
+  const vp=fsVP();
+  const sx=(vp.clientWidth-80)/fsDiagramW, sy=(vp.clientHeight-80)/fsDiagramH;
+  fsScale=Math.min(1,sx,sy);
+  fsTx=(vp.clientWidth-fsDiagramW*fsScale)/2; fsTy=60;
+  fsApplyTransform();
+}
+
+function fsMmUpdate(){
+  const mm=document.getElementById('fsMinimap');
+  const ind=mm.querySelector('.fs-minimap-indicator');
+  if(!ind)return;
+  const mmW=mm.clientWidth,mmH=mm.clientHeight;
+  const sc=Math.min(mmW/fsDiagramW,mmH/fsDiagramH);
+  const vp=fsVP();
+  const visX=-fsTx/fsScale,visY=-fsTy/fsScale,visW=vp.clientWidth/fsScale,visH=vp.clientHeight/fsScale;
+  ind.style.left=Math.max(0,visX*sc)+'px';
+  ind.style.top=Math.max(0,visY*sc)+'px';
+  ind.style.width=Math.min(mmW,visW*sc)+'px';
+  ind.style.height=Math.min(mmH,visH*sc)+'px';
+}
+
+function openFullscreen(){
+  const overlay=document.getElementById('fullscreenOverlay');
+  overlay.classList.add('active');
+  document.body.style.overflow='hidden';
+
+  // Clone the SVG into fs canvas if not already done
+  const fsCv=fsCvs();
+  if(!fsCv.innerHTML){
+    fsCv.innerHTML = document.getElementById('diagramCanvas').innerHTML;
+    fsDiagramW=diagramW; fsDiagramH=diagramH;
+
+    // attach tooltip to fs nodes
+    fsCv.addEventListener('mouseover',e=>{
+      const g=e.target.closest('.dnode'); if(!g)return;
+      document.getElementById('tt-title').textContent=g.dataset.label;
+      document.getElementById('tt-url').textContent=g.dataset.url;
+      document.getElementById('tt-desc').textContent=g.dataset.desc;
+      document.getElementById('tooltip').style.display='block';
+    });
+    fsCv.addEventListener('mousemove',e=>{
+      document.getElementById('tooltip').style.left=(e.clientX+14)+'px';
+      document.getElementById('tooltip').style.top=(e.clientY-10)+'px';
+    });
+    fsCv.addEventListener('mouseleave',()=>document.getElementById('tooltip').style.display='none');
+
+    // build fs minimap
+    const mm=document.getElementById('fsMinimap');
+    mm.innerHTML=document.getElementById('minimap').innerHTML;
+    // ensure indicator class
+    if(!mm.querySelector('.fs-minimap-indicator')){
+      const ind=document.createElement('div');
+      ind.className='fs-minimap-indicator';
+      mm.appendChild(ind);
+    }
+
+    // init fs pan/zoom events
+    const vp=fsVP();
+    vp.addEventListener('wheel',e=>{
+      e.preventDefault();
+      const r=vp.getBoundingClientRect();
+      fsZoomAt(e.clientX-r.left, e.clientY-r.top, e.deltaY<0?1.12:0.9);
+    },{passive:false});
+    vp.addEventListener('mousedown',e=>{
+      if(e.button!==0)return;
+      fsIsPanning=true; fsStartX=e.clientX; fsStartY=e.clientY; fsStartTx=fsTx; fsStartTy=fsTy;
+      vp.style.cursor='grabbing';
+    });
+    window.addEventListener('mousemove',e=>{
+      if(!fsIsPanning)return;
+      fsTx=fsClampTx(fsStartTx+(e.clientX-fsStartX));
+      fsTy=fsClampTy(fsStartTy+(e.clientY-fsStartY));
+      fsApplyTransform();
+    });
+    window.addEventListener('mouseup',()=>{ fsIsPanning=false; if(vp)vp.style.cursor='grab'; });
+
+    // touch
+    let fsLastDist=0;
+    vp.addEventListener('touchstart',e=>{
+      if(e.touches.length===1){fsIsPanning=true;fsStartX=e.touches[0].clientX;fsStartY=e.touches[0].clientY;fsStartTx=fsTx;fsStartTy=fsTy;}
+      if(e.touches.length===2){fsLastDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}
+      e.preventDefault();
+    },{passive:false});
+    vp.addEventListener('touchmove',e=>{
+      e.preventDefault();
+      if(e.touches.length===1&&fsIsPanning){fsTx=fsClampTx(fsStartTx+(e.touches[0].clientX-fsStartX));fsTy=fsClampTy(fsStartTy+(e.touches[0].clientY-fsStartY));fsApplyTransform();}
+      if(e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);const cx=(e.touches[0].clientX+e.touches[1].clientX)/2-vp.getBoundingClientRect().left;const cy=(e.touches[0].clientY+e.touches[1].clientY)/2-vp.getBoundingClientRect().top;if(fsLastDist>0)fsZoomAt(cx,cy,d/fsLastDist);fsLastDist=d;}
+    },{passive:false});
+    vp.addEventListener('touchend',()=>{fsIsPanning=false;fsLastDist=0;});
+  }
+
+  setTimeout(fsFit, 60);
+}
+
+function closeFullscreen(){
+  document.getElementById('fullscreenOverlay').classList.remove('active');
+  document.body.style.overflow='';
+}
+</script>
+</body>
+</html>
